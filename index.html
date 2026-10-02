@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OmniVerse Hub — Standalone Elite Media Dashboard</title>
+  <meta name="description" content="Elite centralized media dashboard with live YouTube API v3 and TikTok/Shorts vertical feed.">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            pitch: '#030303',
+            surface: '#08080d',
+            crimson: '#e11d48',
+            deepblue: '#2563eb',
+            darkorange: '#ea580c',
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* Base Reset & Elite Aesthetics */
+    * {
+      box-sizing: border-box;
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+    body {
+      background-color: #030303;
+      color: #f4f4f5;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #050505;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(225, 29, 72, 0.5);
+    }
+
+    /* Glow Effects */
+    .glow-neon-red {
+      box-shadow: 0 0 25px -4px rgba(225, 29, 72, 0.45);
+    }
+    .glow-neon-blue {
+      box-shadow: 0 0 25px -4px rgba(37, 99, 235, 0.45);
+    }
+    .glow-neon-orange {
+      box-shadow: 0 0 25px -4px rgba(234, 88, 12, 0.45);
+    }
+
+    /* Vinyl Slow Spin */
+    @keyframes spinDisc {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin-slow {
+      animation: spinDisc 6s linear infinite;
+    }
+
+    /* Custom Transitions */
+    .fade-enter {
+      animation: fadeIn 0.25s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="bg-[#030303] text-zinc-100 min-h-screen flex flex-col md:flex-row relative">
+
+  <!-- Dynamic Ambient Backlights -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute -top-40 -left-40 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[140px] opacity-70"></div>
+    <div class="absolute top-1/3 -right-40 w-[650px] h-[650px] bg-rose-600/10 rounded-full blur-[160px] opacity-60"></div>
+    <div class="absolute -bottom-40 left-1/3 w-[600px] h-[600px] bg-orange-600/10 rounded-full blur-[150px] opacity-50"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] [background-size:28px_28px] opacity-40"></div>
+  </div>
+
+  <!-- SIDEBAR (DESKTOP) -->
+  <aside id="sidebar" class="relative z-20 flex-shrink-0 transition-all duration-300 border-r border-white/[0.08] bg-[#07070a]/90 backdrop-blur-2xl flex flex-col justify-between w-64 hidden md:flex min-h-screen p-4">
+    <div>
+      <!-- Brand Logo -->
+      <div class="flex items-center justify-between pb-6 mb-4 border-b border-white/[0.06]">
+        <div class="flex items-center gap-3 overflow-hidden cursor-pointer" onclick="switchTab('youtube')">
+          <div class="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 via-orange-500 to-blue-600 p-[1px] shadow-[0_0_20px_rgba(225,29,72,0.4)]">
+            <div class="w-full h-full bg-[#08080c] rounded-[11px] flex items-center justify-center">
+              <svg class="w-5 h-5 text-rose-500 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+              </svg>
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <span class="font-extrabold text-lg tracking-wider bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+              OMNIVERSE
+            </span>
+            <span class="text-[10px] tracking-widest uppercase font-mono text-orange-400/90 font-semibold -mt-1">
+              Standalone • Hub
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="space-y-1.5">
+        <button id="nav-btn-youtube" onclick="switchTab('youtube')" class="w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 bg-gradient-to-r from-rose-600/20 via-orange-600/15 to-transparent text-white border border-rose-500/30 shadow-[0_0_20px_rgba(225,29,72,0.2)]">
+          <svg class="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+          <span>YouTube Feed</span>
+          <span class="ml-auto w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]"></span>
+        </button>
+
+        <button id="nav-btn-reels" onclick="switchTab('reels')" class="w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04]">
+          <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+            <line x1="7" y1="2" x2="7" y2="22"/>
+            <line x1="17" y1="2" x2="17" y2="22"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <line x1="2" y1="7" x2="7" y2="7"/>
+            <line x1="2" y1="17" x2="7" y2="17"/>
+            <line x1="17" y1="17" x2="22" y2="17"/>
+            <line x1="17" y1="7" x2="22" y2="7"/>
+          </svg>
+          <div class="flex items-center gap-2">
+            <span>TikTok Reels</span>
+            <span class="px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase rounded bg-blue-600/30 text-blue-400 border border-blue-500/30">Shorts</span>
+          </div>
+        </button>
+
+        <button id="nav-btn-trending" onclick="switchTab('trending')" class="w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04]">
+          <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+            <polyline points="17 6 23 6 23 12"/>
+          </svg>
+          <span>Trending Index</span>
+        </button>
+
+        <button id="nav-btn-library" onclick="switchTab('library')" class="w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04]">
+          <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+          <div class="flex items-center justify-between w-full">
+            <span>Saved Library</span>
+            <span id="saved-badge-count" class="px-2 py-0.5 text-xs font-mono rounded-full bg-white/10 text-white font-semibold">0</span>
+          </div>
+        </button>
+
+        <button id="nav-btn-history" onclick="switchTab('history')" class="w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04]">
+          <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span>Watch History</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Status & Standalone Badge -->
+    <div class="pt-4 border-t border-white/[0.06] space-y-3">
+      <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-mono text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+            Offline & Online
+          </span>
+          <span class="text-[10px] text-zinc-500 font-mono">100% Ready</span>
+        </div>
+        <p class="text-xs text-zinc-300 font-medium">
+          bodytop.html is completely self-contained. Double-click & it runs!
+        </p>
+        <button onclick="fetchYouTubeData('', currentCategory)" class="w-full py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] font-medium text-zinc-300 flex items-center justify-center gap-1.5 transition-colors border border-white/5">
+          <svg id="sync-icon" class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+          Sync Live API
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MOBILE NAVIGATION HEADER -->
+  <div class="md:hidden sticky top-0 z-40 bg-[#07070a]/95 backdrop-blur-xl border-b border-white/[0.08] px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-2" onclick="switchTab('youtube')">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-rose-600 to-orange-500 flex items-center justify-center shadow-[0_0_12px_rgba(225,29,72,0.4)]">
+        <span class="font-bold text-white text-sm">OV</span>
+      </div>
+      <span class="font-extrabold text-sm tracking-wider text-white">OMNIVERSE</span>
+    </div>
+    <div class="flex items-center gap-1 bg-white/[0.06] p-1 rounded-xl border border-white/10">
+      <button onclick="switchTab('youtube')" class="px-2.5 py-1 text-xs font-medium rounded-lg text-rose-400">YouTube</button>
+      <button onclick="switchTab('reels')" class="px-2.5 py-1 text-xs font-medium rounded-lg text-blue-400">Reels</button>
+      <button onclick="switchTab('library')" class="px-2 py-1 text-xs text-zinc-400">Saved</button>
+    </div>
+  </div>
+
+  <!-- MAIN VIEWPORT -->
+  <main class="flex-1 flex flex-col min-w-0 relative z-10 h-screen overflow-y-auto">
+    <!-- Top Header Bar -->
+    <header class="sticky top-0 z-30 bg-[#040406]/85 backdrop-blur-xl border-b border-white/[0.08] px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
+      <form onsubmit="handleSearch(event)" class="flex-1 max-w-2xl relative">
+        <div class="relative flex items-center">
+          <svg class="w-4 h-4 text-zinc-400 absolute left-3.5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            id="search-input"
+            type="text"
+            placeholder="Search live YouTube videos or filter trending reels..."
+            class="w-full bg-[#0d0d12]/90 hover:bg-[#12121a] focus:bg-[#12121a] border border-white/10 focus:border-rose-500/50 rounded-xl pl-10 pr-24 py-2 text-sm text-zinc-200 placeholder-zinc-500 transition-all outline-none"
+          />
+          <button type="submit" class="absolute right-2 px-3 py-1 rounded-lg bg-gradient-to-r from-rose-600 to-orange-600 text-white text-xs font-semibold shadow hover:opacity-90">
+            Search
+          </button>
+        </div>
+      </form>
+
+      <div class="flex items-center gap-2">
+        <button onclick="switchTab('youtube')" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-xs font-medium text-zinc-200 border border-white/10">
+          YouTube
+        </button>
+        <button onclick="switchTab('reels')" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600/30 to-indigo-600/30 text-blue-300 text-xs font-medium border border-blue-500/30">
+          TikTok Reels
+        </button>
+      </div>
+    </header>
+
+    <!-- TAB 1: YOUTUBE FEED -->
+    <section id="view-youtube" class="p-4 sm:p-8 space-y-6 fade-enter">
+      <!-- Category Badges -->
+      <div id="category-bar" class="flex items-center gap-2 overflow-x-auto pb-2">
+        <!-- Rendered via JS -->
+      </div>
+
+      <!-- Spotlight Banner -->
+      <div class="relative rounded-2xl overflow-hidden border border-white/[0.1] bg-gradient-to-br from-rose-950/40 via-zinc-950/90 to-blue-950/40 p-6 sm:p-8 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div class="space-y-2 max-w-2xl">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-600/30 text-rose-300 border border-rose-500/40 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping"></span>
+                YouTube API v3 Live
+              </span>
+              <span class="text-zinc-400 text-xs font-mono">• Direct Google Endpoint</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              OmniVerse Media Stream Aggregation
+            </h1>
+            <p class="text-sm text-zinc-400">
+              Live trending videos and viral vertical reels integrated in zero-latency elite dark mode.
+            </p>
+          </div>
+          <button onclick="switchTab('reels')" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold text-xs tracking-wide shadow-[0_0_20px_rgba(59,130,246,0.35)] flex items-center gap-2">
+            Switch to TikTok Reels
+          </button>
+        </div>
+      </div>
+
+      <!-- YouTube Grid -->
+      <div id="youtube-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Videos injected via JS -->
+      </div>
+    </section>
+
+    <!-- TAB 2: TIKTOK REELS / SHORTS VERTICAL FEED -->
+    <section id="view-reels" class="hidden relative flex-1 flex items-center justify-center p-2 sm:p-6 overflow-hidden h-[calc(100vh-4rem)]">
+      <!-- Ambient Backlight -->
+      <div id="reel-backdrop" class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40"></div>
+
+      <!-- Central Reel Vertical Card (9:16) -->
+      <div class="relative z-10 w-full max-w-[400px] h-[82vh] max-h-[820px] rounded-3xl overflow-hidden bg-black border border-white/[0.15] shadow-[0_0_60px_rgba(0,0,0,0.95)] flex flex-col justify-between">
+        <!-- Top Reel Header -->
+        <div class="absolute top-0 inset-x-0 z-30 p-4 bg-gradient-to-b from-black/80 to-transparent flex items-center justify-between">
+          <div class="px-2.5 py-1 rounded-full bg-rose-600 text-white font-mono text-[10px] uppercase font-bold tracking-wider shadow">
+            Shorts Reel • Live
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="toggleReelMute()" id="mute-btn" class="p-2 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/10">
+              <svg id="mute-icon" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              </svg>
+            </button>
+            <button onclick="openModalForActiveReel()" class="p-2 rounded-full bg-black/60 backdrop-blur-md text-white border border-white/10">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="15 3 21 3 21 9"/>
+                <polyline points="9 21 3 21 3 15"/>
+                <line x1="21" y1="3" x2="14" y2="10"/>
+                <line x1="3" y1="21" x2="10" y2="14"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Vertical Video Iframe Container -->
+        <div class="relative w-full h-full bg-[#050508] flex items-center justify-center overflow-hidden">
+          <iframe
+            id="reel-iframe"
+            src=""
+            class="w-full h-full object-cover scale-[1.03]"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          ></iframe>
+        </div>
+
+        <!-- TikTok Right Action Column -->
+        <div class="absolute right-3 bottom-20 z-30 flex flex-col items-center gap-4">
+          <!-- Follow Button -->
+          <div class="relative">
+            <div class="w-11 h-11 rounded-full p-[2px] bg-gradient-to-tr from-rose-500 to-blue-500 shadow">
+              <img id="reel-avatar" src="" class="w-full h-full rounded-full object-cover" alt="creator">
+            </div>
+            <button onclick="toggleFollowActiveReel()" id="reel-follow-btn" class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs font-bold shadow">
+              +
+            </button>
+          </div>
+
+          <!-- Like -->
+          <div class="flex flex-col items-center">
+            <button onclick="toggleLikeActiveReel()" id="reel-like-btn" class="w-11 h-11 rounded-full bg-black/50 text-white backdrop-blur-xl border border-white/10 flex items-center justify-center transition-transform hover:scale-110">
+              <svg id="reel-like-svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+            <span id="reel-like-count" class="text-[11px] font-bold text-white drop-shadow mt-1">420K</span>
+          </div>
+
+          <!-- Comment Drawer Toggle -->
+          <div class="flex flex-col items-center">
+            <button onclick="toggleCommentDrawer()" class="w-11 h-11 rounded-full bg-black/50 text-white backdrop-blur-xl border border-white/10 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+              </svg>
+            </button>
+            <span id="reel-comment-count" class="text-[11px] font-bold text-white drop-shadow mt-1">8.2K</span>
+          </div>
+
+          <!-- Save Bookmark -->
+          <div class="flex flex-col items-center">
+            <button onclick="toggleBookmarkActiveReel()" id="reel-save-btn" class="w-11 h-11 rounded-full bg-black/50 text-white backdrop-blur-xl border border-white/10 flex items-center justify-center">
+              <svg id="reel-save-svg" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+              </svg>
+            </button>
+            <span class="text-[11px] font-bold text-white drop-shadow mt-1">Save</span>
+          </div>
+
+          <!-- Share -->
+          <div class="flex flex-col items-center">
+            <button onclick="shareActiveReel()" class="w-11 h-11 rounded-full bg-black/50 text-white backdrop-blur-xl border border-white/10 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="18" cy="5" r="3"/>
+                <circle cx="6" cy="12" r="3"/>
+                <circle cx="18" cy="19" r="3"/>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+              </svg>
+            </button>
+            <span class="text-[11px] font-bold text-white drop-shadow mt-1">Share</span>
+          </div>
+
+          <!-- Spinning Vinyl Disc -->
+          <div class="relative mt-2">
+            <div class="w-10 h-10 rounded-full bg-zinc-900 border-2 border-zinc-700 flex items-center justify-center animate-spin-slow shadow">
+              <div class="w-3 h-3 rounded-full bg-rose-600"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reel Overlay Details -->
+        <div class="absolute bottom-0 inset-x-0 z-30 p-4 pb-5 bg-gradient-to-t from-black/95 via-black/70 to-transparent pr-20 space-y-1.5 pointer-events-none">
+          <div class="font-bold text-sm text-white pointer-events-auto" id="reel-author">@creator</div>
+          <p class="text-xs text-zinc-200 line-clamp-2 leading-relaxed pointer-events-auto" id="reel-desc">Short description</p>
+          <div class="flex items-center gap-2 text-xs text-zinc-300 font-mono pointer-events-auto">
+            <span class="text-rose-400">🎵</span>
+            <span class="truncate text-[11px]" id="reel-audio">Original Sound • Trending</span>
+          </div>
+        </div>
+
+        <!-- Up / Down Arrows -->
+        <div class="absolute left-3 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2">
+          <button onclick="prevReel()" class="p-2 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md border border-white/10 shadow-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+          </button>
+          <button onclick="nextReel()" class="p-2 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md border border-white/10 shadow-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Slide-Over Comment Drawer -->
+      <div id="comment-drawer" class="hidden absolute inset-y-0 right-0 z-40 w-full sm:w-96 bg-[#0a0a0f]/95 backdrop-blur-2xl border-l border-white/[0.1] shadow-2xl flex flex-col justify-between p-5">
+        <div>
+          <div class="flex items-center justify-between pb-4 border-b border-white/10">
+            <div class="flex items-center gap-2">
+              <span class="text-rose-500 font-bold text-sm">💬 Comments</span>
+            </div>
+            <button onclick="toggleCommentDrawer()" class="p-1 rounded-lg text-zinc-400 hover:text-white">✕</button>
+          </div>
+          <div id="comments-container" class="mt-4 space-y-4 max-h-[60vh] overflow-y-auto pr-1"></div>
+        </div>
+        <form onsubmit="postComment(event)" class="pt-4 border-t border-white/10 flex items-center gap-2">
+          <input id="comment-input" type="text" placeholder="Add a comment to this reel..." class="flex-1 bg-[#13131d] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 outline-none focus:border-rose-500" />
+          <button type="submit" class="px-3 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-orange-500 text-white text-xs font-semibold">Post</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- TAB 3: TRENDING INDEX -->
+    <section id="view-trending" class="hidden p-4 sm:p-8 space-y-6 fade-enter">
+      <div class="pb-4 border-b border-white/[0.08]">
+        <h2 class="text-xl font-extrabold text-white">OmniVerse Global Trending Index</h2>
+        <p class="text-xs text-zinc-400 mt-1">Cross-platform highlights pulling top long-form and short reels.</p>
+      </div>
+      <div id="trending-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </section>
+
+    <!-- TAB 4: SAVED LIBRARY -->
+    <section id="view-library" class="hidden p-4 sm:p-8 space-y-6 fade-enter">
+      <div class="pb-4 border-b border-white/[0.08]">
+        <h2 class="text-xl font-extrabold text-white">Your Saved Library</h2>
+        <p class="text-xs text-zinc-400 mt-1">Bookmarked videos and reels saved in local storage.</p>
+      </div>
+      <div id="library-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+    </section>
+
+    <!-- TAB 5: WATCH HISTORY -->
+    <section id="view-history" class="hidden p-4 sm:p-8 space-y-6 fade-enter">
+      <div class="flex items-center justify-between pb-4 border-b border-white/[0.08]">
+        <div>
+          <h2 class="text-xl font-extrabold text-white">Watch History</h2>
+          <p class="text-xs text-zinc-400 mt-1">Recently played videos across the platform.</p>
+        </div>
+        <button onclick="clearHistory()" class="px-3 py-1.5 rounded-lg bg-rose-600/20 text-rose-300 text-xs border border-rose-500/30">Clear</button>
+      </div>
+      <div id="history-grid" class="space-y-3"></div>
+    </section>
+  </main>
+
+  <!-- THEATER VIDEO PLAYER MODAL -->
+  <div id="player-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-2xl flex items-center justify-center p-2 sm:p-6">
+    <div class="w-full max-w-5xl bg-[#09090f] border border-white/[0.12] rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+      <div class="px-5 py-3 border-b border-white/[0.08] bg-[#0c0c14] flex items-center justify-between">
+        <span class="text-xs font-mono text-zinc-400" id="modal-title-bar">Theater HD Player</span>
+        <button onclick="closeModal()" class="text-zinc-400 hover:text-white p-1 text-base">✕</button>
+      </div>
+      <div class="relative aspect-video w-full bg-black">
+        <iframe id="modal-iframe" src="" class="w-full h-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+      <div class="p-5 space-y-3 bg-[#08080d]">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 id="modal-title" class="text-base font-bold text-white">Video Title</h3>
+            <p id="modal-channel" class="text-xs text-zinc-400 font-mono mt-0.5">Channel Title</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="toggleLikeCurrentModal()" class="px-3 py-1.5 rounded-xl bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-semibold">❤️ Like</button>
+            <button onclick="toggleBookmarkCurrentModal()" class="px-3 py-1.5 rounded-xl bg-orange-600/30 text-orange-300 border border-orange-500/30 text-xs font-semibold">🔖 Save</button>
+            <a id="modal-external-link" href="#" target="_blank" class="px-3 py-1.5 rounded-xl bg-white/10 text-white text-xs font-semibold">Open YouTube</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl bg-zinc-950/95 text-white text-xs font-medium border border-rose-500/40 shadow-2xl backdrop-blur-xl">
+    <span id="toast-text">Notification</span>
+  </div>
+
+  <!-- SCRIPT LOGIC (STANDALONE ENGINE) -->
+  <script>
+    // Configuration
+    const YOUTUBE_API_KEY = "AIzaSyCld_hv1y3ASRVLjWwJP9Pcq1mnnbnSOUs";
+
+    // Curated high-retention fallback catalog
+    const CURATED_VIDEOS = [
+      {
+        id: "kJQP7kiw5Fk",
+        title: "Luis Fonsi - Despacito ft. Daddy Yankee (Ultra 4K Remaster)",
+        thumbnail: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&auto=format&fit=crop&q=80",
+        channelTitle: "Luis Fonsi Official",
+        viewCount: "8.4B views",
+        likeCount: "52M",
+        duration: "4:42",
+        category: "Music"
+      },
+      {
+        id: "fJ9rUzIMcZQ",
+        title: "Queen – Bohemian Rhapsody (Official Video Remastered)",
+        thumbnail: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&auto=format&fit=crop&q=80",
+        channelTitle: "Queen Official",
+        viewCount: "1.7B views",
+        likeCount: "12M",
+        duration: "5:59",
+        category: "Music"
+      },
+      {
+        id: "8X2kIfS6fb8",
+        title: "Cyberpunk 2077 — Night City 8K Ray Tracing Overhaul",
+        thumbnail: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80",
+        channelTitle: "Digital Foundry",
+        viewCount: "3.2M views",
+        likeCount: "185K",
+        duration: "14:15",
+        category: "Cyberpunk"
+      },
+      {
+        id: "jfKfPfyJRdk",
+        title: "lofi hip hop radio 📚 - beats to relax/study to",
+        thumbnail: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80",
+        channelTitle: "Lofi Girl",
+        viewCount: "74M views",
+        likeCount: "7.1M",
+        duration: "LIVE",
+        category: "Music"
+      },
+      {
+        id: "L_LUpnjgPso",
+        title: "Apple Vision Pro 2 In-Depth Architecture: Spatial Computing",
+        thumbnail: "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?w=800&auto=format&fit=crop&q=80",
+        channelTitle: "Marques Brownlee",
+        viewCount: "6.9M views",
+        likeCount: "340K",
+        duration: "18:22",
+        category: "Tech & AI"
+      },
+      {
+        id: "3tmd-ClpJxA",
+        title: "Artificial Superintelligence: What Happens When AI Surpasses Humanity?",
+        thumbnail: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80",
+        channelTitle: "Veritasium",
+        viewCount: "4.8M views",
+        likeCount: "260K",
+        duration: "21:40",
+        category: "Tech & AI"
+      },
+      {
+        id: "LXb3EKWsInQ",
+        title: "COSTA RICA IN 4K 60fps HDR (Ultra HD) Nature Documentary",
+        thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=80",
+        channelTitle: "Jacob + Katie Schwarz",
+        viewCount: "128M views",
+        likeCount: "1.4M",
+        duration: "5:15",
+        category: "Cinematic"
+      }
+    ];
+
+    // Curated TikTok Reels
+    const CURATED_REELS = [
+      {
+        id: "nPt8bK2gbaU",
+        title: "Future of Neural Prosthetics & Cybernetic Interfaces 🤖⚡",
+        author: "CyberTech Lab",
+        thumbnail: "https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=600&auto=format&fit=crop&q=80",
+        likes: "420K",
+        commentsCount: "8.2K",
+        audio: "Cybernetic Pulse • OmniAudio"
+      },
+      {
+        id: "mDkK8k2pXgE",
+        title: "This Japanese Street Food Master cooks in 0.5 seconds! 🍜🔥",
+        author: "Tokyo Bites",
+        thumbnail: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&auto=format&fit=crop&q=80",
+        likes: "710K",
+        commentsCount: "14.5K",
+        audio: "Tokyo Drift Lofi Beat • Kenji"
+      },
+      {
+        id: "Qd7UqXjGZqI",
+        title: "Satisfying Fluid Dynamics Simulation in Unreal Engine 5.4 🌊",
+        author: "VFX Alchemist",
+        thumbnail: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80",
+        likes: "295K",
+        commentsCount: "4.1K",
+        audio: "Ethereal Waves • SoundScape"
+      },
+      {
+        id: "YVkUvmDQ3HY",
+        title: "When you finally build your Dream Minimalist Cyber-Desk Setup 🖥️✨",
+        author: "Minimal Aesthetics",
+        thumbnail: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&auto=format&fit=crop&q=80",
+        likes: "530K",
+        commentsCount: "9.8K",
+        audio: "Nightcall (Synthwave) • Kavinsky"
+      },
+      {
+        id: "w7ejDZ8SWv8",
+        title: "Extreme FPV Drone Dive off a 2,000ft Alpine Cliff 🦅🏔️",
+        author: "SkyRider FPV",
+        thumbnail: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&auto=format&fit=crop&q=80",
+        likes: "1.2M",
+        commentsCount: "21K",
+        audio: "Adrenaline Rush 2.0 • BassDrop"
+      }
+    ];
+
+    // Local Storage helpers
+    function getStored(key, def) {
+      try {
+        const val = localStorage.getItem(key);
+        return val ? JSON.parse(val) : def;
+      } catch { return def; }
+    }
+    function setStored(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+    }
+
+    let bookmarks = new Set(getStored('ov_bookmarks', []));
+    let likes = new Set(getStored('ov_likes', []));
+    let history = getStored('ov_history', []);
+    let following = new Set(getStored('ov_following', []));
+    let comments = getStored('ov_comments', {
+      default: [
+        { author: "Alex_V", text: "The pacing in this clip is insane 🔥", time: "2h ago" },
+        { author: "NeonGhost", text: "Standalone bodytop.html works like a dream!", time: "5h ago" }
+      ]
+    });
+
+    let currentTab = 'youtube';
+    let currentCategory = 'All';
+    let currentReelIndex = 0;
+    let reelMuted = false;
+    let activeModalItem = null;
+    let allVideos = [...CURATED_VIDEOS];
+
+    const categories = ['All', 'Trending', 'Gaming', 'Music', 'Tech & AI', 'Cyberpunk', 'Cinematic'];
+
+    // Toast helper
+    function showToast(text) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      toastText.innerText = text;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2500);
+    }
+
+    // Switch Tabs
+    function switchTab(tab) {
+      currentTab = tab;
+      ['youtube', 'reels', 'trending', 'library', 'history'].forEach(t => {
+        const view = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`nav-btn-${t}`);
+        if (view) view.classList.toggle('hidden', t !== tab);
+        if (btn) {
+          if (t === tab) {
+            btn.className = "w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 bg-gradient-to-r from-rose-600/20 via-orange-600/15 to-transparent text-white border border-rose-500/30 shadow-[0_0_20px_rgba(225,29,72,0.2)]";
+          } else {
+            btn.className = "w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl font-medium text-sm transition-all duration-200 text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.04]";
+          }
+        }
+      });
+
+      if (tab === 'reels') updateReelDisplay();
+      if (tab === 'library') renderLibrary();
+      if (tab === 'history') renderHistory();
+      if (tab === 'trending') renderTrending();
+    }
+
+    // Categories Render
+    function renderCategories() {
+      const bar = document.getElementById('category-bar');
+      bar.innerHTML = categories.map(cat => `
+        <button onclick="selectCategory('${cat}')" class="px-4 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+          currentCategory === cat
+            ? 'bg-gradient-to-r from-rose-600 via-orange-600 to-blue-600 text-white shadow border border-white/20'
+            : 'bg-white/[0.04] text-zinc-400 hover:text-white border border-white/[0.06]'
+        }">
+          ${cat === 'All' ? '⚡ All Feeds' : cat}
+        </button>
+      `).join('');
+    }
+
+    function selectCategory(cat) {
+      currentCategory = cat;
+      renderCategories();
+      fetchYouTubeData('', cat);
+    }
+
+    // Fetch YouTube Data
+    async function fetchYouTubeData(query = '', cat = 'All') {
+      const grid = document.getElementById('youtube-grid');
+      const syncIcon = document.getElementById('sync-icon');
+      if (syncIcon) syncIcon.classList.add('animate-spin');
+
+      try {
+        const q = query.trim() || (cat !== 'All' ? cat : '');
+        let url = q
+          ? `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=16&q=${encodeURIComponent(q)}&type=video&key=${YOUTUBE_API_KEY}`
+          : `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&chart=mostPopular&regionCode=US&maxResults=16&key=${YOUTUBE_API_KEY}`;
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("API Limit");
+        const data = await res.json();
+
+        if (data.items && data.items.length > 0) {
+          allVideos = data.items.map(item => {
+            const isSearch = !!item.id.videoId;
+            const id = isSearch ? item.id.videoId : item.id;
+            return {
+              id: id,
+              title: item.snippet.title,
+              thumbnail: item.snippet.thumbnails?.high?.url || item.snippet.thumbnails?.medium?.url,
+              channelTitle: item.snippet.channelTitle,
+              viewCount: item.statistics?.viewCount ? `${Math.round(item.statistics.viewCount / 1000000)}M views` : "1.2M views",
+              likeCount: item.statistics?.likeCount ? `${Math.round(item.statistics.likeCount / 1000)}K` : "45K",
+              duration: "10:14",
+              category: cat
+            };
+          });
+        }
+      } catch (err) {
+        console.warn("Using offline-resilient feed:", err);
+        allVideos = CURATED_VIDEOS.filter(v => cat === 'All' || v.category === cat || !cat);
+      } finally {
+        if (syncIcon) syncIcon.classList.remove('animate-spin');
+        renderYouTubeGrid(allVideos);
+      }
+    }
+
+    function renderYouTubeGrid(videos) {
+      const grid = document.getElementById('youtube-grid');
+      grid.innerHTML = videos.map(video => `
+        <div onclick="openModal('${video.id}')" class="group cursor-pointer rounded-2xl overflow-hidden bg-gradient-to-b from-[#0c0c14] to-[#07070b] border border-white/[0.08] hover:border-rose-500/40 transition-all flex flex-col hover:shadow-lg">
+          <div class="relative aspect-video bg-black overflow-hidden">
+            <img src="${video.thumbnail}" alt="${video.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <div class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/80 text-[10px] font-mono text-zinc-200">
+              ${video.duration}
+            </div>
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+              <div class="w-10 h-10 rounded-full bg-rose-600 flex items-center justify-center text-white shadow-lg">▶</div>
+            </div>
+          </div>
+          <div class="p-3.5 space-y-2 flex-1 flex flex-col justify-between">
+            <h3 class="text-xs font-semibold text-zinc-100 line-clamp-2 group-hover:text-rose-400">${video.title}</h3>
+            <div class="flex items-center justify-between text-[11px] text-zinc-400 font-mono pt-2 border-t border-white/[0.04]">
+              <span class="truncate">${video.channelTitle}</span>
+              <span>${video.viewCount}</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // TikTok Reels logic
+    function updateReelDisplay() {
+      const reel = CURATED_REELS[currentReelIndex];
+      if (!reel) return;
+
+      document.getElementById('reel-iframe').src = `https://www.youtube.com/embed/${reel.id}?autoplay=1&controls=0&loop=1&playlist=${reel.id}&modestbranding=1&mute=${reelMuted ? 1 : 0}&playsinline=1`;
+      document.getElementById('reel-backdrop').innerHTML = `<img src="${reel.thumbnail}" class="w-full h-full object-cover filter blur-[100px] scale-125" />`;
+      document.getElementById('reel-avatar').src = reel.thumbnail;
+      document.getElementById('reel-author').innerText = `@${reel.author.replace(/\s+/g, '').toLowerCase()}`;
+      document.getElementById('reel-desc').innerText = reel.title;
+      document.getElementById('reel-audio').innerText = reel.audio;
+      document.getElementById('reel-like-count').innerText = reel.likes;
+      document.getElementById('reel-comment-count').innerText = reel.commentsCount;
+
+      const isLiked = likes.has(reel.id);
+      const isSaved = bookmarks.has(reel.id);
+      const isFollow = following.has(reel.author);
+
+      document.getElementById('reel-like-svg').setAttribute('fill', isLiked ? '#f43f5e' : 'none');
+      document.getElementById('reel-save-svg').setAttribute('fill', isSaved ? '#f97316' : 'none');
+      document.getElementById('reel-follow-btn').innerText = isFollow ? '✓' : '+';
+    }
+
+    function nextReel() {
+      currentReelIndex = (currentReelIndex + 1) % CURATED_REELS.length;
+      updateReelDisplay();
+    }
+    function prevReel() {
+      currentReelIndex = (currentReelIndex - 1 + CURATED_REELS.length) % CURATED_REELS.length;
+      updateReelDisplay();
+    }
+    function toggleReelMute() {
+      reelMuted = !reelMuted;
+      updateReelDisplay();
+      showToast(reelMuted ? "Audio Muted" : "Audio Active");
+    }
+    function toggleLikeActiveReel() {
+      const r = CURATED_REELS[currentReelIndex];
+      if (likes.has(r.id)) {
+        likes.delete(r.id);
+        showToast("Like removed");
+      } else {
+        likes.add(r.id);
+        showToast("Liked ❤️");
+      }
+      setStored('ov_likes', Array.from(likes));
+      updateReelDisplay();
+    }
+    function toggleBookmarkActiveReel() {
+      const r = CURATED_REELS[currentReelIndex];
+      if (bookmarks.has(r.id)) {
+        bookmarks.delete(r.id);
+        showToast("Removed from Library");
+      } else {
+        bookmarks.add(r.id);
+        showToast("Saved to Library 🔖");
+      }
+      setStored('ov_bookmarks', Array.from(bookmarks));
+      updateSavedCount();
+      updateReelDisplay();
+    }
+    function toggleFollowActiveReel() {
+      const r = CURATED_REELS[currentReelIndex];
+      if (following.has(r.author)) {
+        following.delete(r.author);
+        showToast(`Unfollowed ${r.author}`);
+      } else {
+        following.add(r.author);
+        showToast(`Following ${r.author}`);
+      }
+      setStored('ov_following', Array.from(following));
+      updateReelDisplay();
+    }
+    function shareActiveReel() {
+      const r = CURATED_REELS[currentReelIndex];
+      const url = `https://www.youtube.com/shorts/${r.id}`;
+      navigator.clipboard?.writeText(url);
+      showToast("Reel link copied to clipboard!");
+    }
+
+    // Comment Drawer
+    function toggleCommentDrawer() {
+      const drawer = document.getElementById('comment-drawer');
+      const isHidden = drawer.classList.contains('hidden');
+      drawer.classList.toggle('hidden', !isHidden);
+      if (isHidden) renderComments();
+    }
+    function renderComments() {
+      const container = document.getElementById('comments-container');
+      const r = CURATED_REELS[currentReelIndex];
+      const list = comments[r.id] || comments.default;
+      container.innerHTML = list.map(c => `
+        <div class="flex gap-2.5 text-xs">
+          <div class="w-7 h-7 rounded-full bg-zinc-700 flex items-center justify-center font-bold text-zinc-300 flex-shrink-0">
+            ${c.author.charAt(0)}
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-zinc-200">@${c.author}</span>
+              <span class="text-[10px] text-zinc-500">${c.time || 'now'}</span>
+            </div>
+            <p class="text-zinc-300 mt-0.5">${c.text}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+    function postComment(e) {
+      e.preventDefault();
+      const input = document.getElementById('comment-input');
+      const txt = input.value.trim();
+      if (!txt) return;
+      const r = CURATED_REELS[currentReelIndex];
+      if (!comments[r.id]) comments[r.id] = [...comments.default];
+      comments[r.id].unshift({ author: "You", text: txt, time: "Just now" });
+      setStored('ov_comments', comments);
+      input.value = '';
+      renderComments();
+      showToast("Comment posted!");
+    }
+
+    // Theater Modal
+    function openModal(id) {
+      const video = allVideos.find(v => v.id === id) || CURATED_REELS.find(r => r.id === id) || { id, title: 'Video Stream', channelTitle: 'YouTube' };
+      activeModalItem = video;
+      document.getElementById('modal-iframe').src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+      document.getElementById('modal-title').innerText = video.title;
+      document.getElementById('modal-channel').innerText = video.channelTitle || video.author || 'OmniVerse Stream';
+      document.getElementById('modal-external-link').href = `https://www.youtube.com/watch?v=${id}`;
+      document.getElementById('player-modal').classList.remove('hidden');
+
+      // Record History
+      history = [video, ...history.filter(h => h.id !== id)].slice(0, 30);
+      setStored('ov_history', history);
+    }
+    function openModalForActiveReel() {
+      const r = CURATED_REELS[currentReelIndex];
+      openModal(r.id);
+    }
+    function closeModal() {
+      document.getElementById('modal-iframe').src = '';
+      document.getElementById('player-modal').classList.add('hidden');
+    }
+    function toggleLikeCurrentModal() {
+      if (!activeModalItem) return;
+      toggleLikeActiveReel();
+    }
+    function toggleBookmarkCurrentModal() {
+      if (!activeModalItem) return;
+      toggleBookmarkActiveReel();
+    }
+
+    // Saved Library & History
+    function updateSavedCount() {
+      document.getElementById('saved-badge-count').innerText = bookmarks.size;
+    }
+    function renderLibrary() {
+      const grid = document.getElementById('library-grid');
+      const allKnown = [...allVideos, ...CURATED_REELS, ...history];
+      const savedItems = allKnown.filter(item => bookmarks.has(item.id));
+      if (savedItems.length === 0) {
+        grid.innerHTML = `<div class="col-span-full py-16 text-center text-zinc-500 text-sm">No bookmarked items yet. Save videos to access them offline anytime.</div>`;
+        return;
+      }
+      grid.innerHTML = savedItems.map(item => `
+        <div onclick="openModal('${item.id}')" class="cursor-pointer rounded-2xl overflow-hidden bg-[#0c0c14] border border-white/10 p-3 space-y-2">
+          <div class="aspect-video rounded-xl overflow-hidden bg-black">
+            <img src="${item.thumbnail}" class="w-full h-full object-cover" />
+          </div>
+          <h4 class="text-xs font-semibold text-zinc-200 truncate">${item.title}</h4>
+        </div>
+      `).join('');
+    }
+    function renderHistory() {
+      const grid = document.getElementById('history-grid');
+      if (history.length === 0) {
+        grid.innerHTML = `<div class="py-16 text-center text-zinc-500 text-sm">Watch history is empty.</div>`;
+        return;
+      }
+      grid.innerHTML = history.map(item => `
+        <div onclick="openModal('${item.id}')" class="cursor-pointer p-3 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center gap-3">
+          <div class="w-24 aspect-video rounded-lg overflow-hidden bg-black flex-shrink-0">
+            <img src="${item.thumbnail}" class="w-full h-full object-cover" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <h4 class="text-xs font-semibold text-zinc-200 truncate">${item.title}</h4>
+            <p class="text-[11px] text-zinc-500">${item.channelTitle || item.author || ''}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+    function clearHistory() {
+      history = [];
+      setStored('ov_history', []);
+      renderHistory();
+      showToast("History cleared");
+    }
+
+    function renderTrending() {
+      const grid = document.getElementById('trending-grid');
+      grid.innerHTML = CURATED_REELS.map(r => `
+        <div onclick="openModal('${r.id}')" class="cursor-pointer rounded-2xl overflow-hidden bg-[#0c0c14] border border-white/10 p-3 space-y-2">
+          <div class="aspect-[9/12] rounded-xl overflow-hidden bg-black relative">
+            <img src="${r.thumbnail}" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-3">
+              <span class="text-xs font-bold text-white">${r.title}</span>
+              <span class="text-[10px] text-zinc-400 mt-1">${r.likes} likes</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Search Handler
+    function handleSearch(e) {
+      e.preventDefault();
+      const val = document.getElementById('search-input').value;
+      if (currentTab === 'reels') {
+        showToast("Filtering reels for: " + val);
+      } else {
+        fetchYouTubeData(val, currentCategory);
+      }
+    }
+
+    // Keyboard navigation (Arrow keys for reels, ESC for modal)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+      if (currentTab === 'reels') {
+        if (e.key === 'ArrowDown') { e.preventDefault(); nextReel(); }
+        if (e.key === 'ArrowUp') { e.preventDefault(); prevReel(); }
+      }
+    });
+
+    // Initialize
+    renderCategories();
+    fetchYouTubeData();
+    updateSavedCount();
+  </script>
+</body>
+</html>
